@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { background: #0a0e14; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; overflow: hidden; }
+        .container { border: 1px solid #1a222c; border-radius: 20px; padding: 25px; background: radial-gradient(circle at top, #161d26 0%, #0a0e14 100%); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { font-size: 28px; margin-bottom: 5px; font-weight: 800; }
+        .gold { color: #f3ba2f; }
+        .btn-copy { background: #f3ba2f; color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; margin: 20px 0; font-size: 16px; transition: 0.3s; }
+        .card-box { background: #fffbe6; color: #1a1a1a; padding: 20px; border-radius: 15px; font-size: 1.3em; font-family: 'Courier New', monospace; font-weight: bold; border: 2px solid #f3ba2f; box-shadow: inset 0 0 10px rgba(243,186,47,0.2); }
+        .details-title { border-bottom: 1px solid #333; display: inline-block; padding: 0 20px 5px; margin-top: 20px; letter-spacing: 2px; }
+        .info-grid { margin-top: 20px; color: #aaa; font-size: 14px; text-align: left; }
+        .info-item { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #222; padding-bottom: 4px; }
+        .val { color: white; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>X-Force <span class="gold">Drops</span></h1>
+        <button class="btn-copy" onclick="copyNum()">Copy Card Number</button>
+        <div class="gold details-title">DETAILS</div>
+        <div class="card-box" id="cardDisplay">0000|00/00|000</div>
+        <div class="info-grid">
+            <div class="info-item"><span>BIN:</span> <span class="val gold" id="binVal">------</span></div>
+            <div class="info-item"><span>Bank:</span> <span class="val">INTERNATIONAL BANK</span></div>
+            <div class="info-item"><span>Country:</span> <span class="val">UNITED STATES 🇺🇸</span></div>
+        </div>
+    </div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const params = new URLSearchParams(window.location.search);
+        const cardData = params.get('card') || "4242|01/26|000";
+        document.getElementById('cardDisplay').innerText = cardData;
+        document.getElementById('binVal').innerText = cardData.substring(0,6);
+        function copyNum() {
+            const num = cardData.split('|')[0];
+            navigator.clipboard.writeText(num);
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("✅ Card number copied!");
+        }
+    </script>
+</body>
+</html>
