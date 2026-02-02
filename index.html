@@ -2,174 +2,96 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { 
-            background: #050505; /* Fondo muy oscuro */
-            color: #fff; 
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 100vh; 
-            margin: 0; 
-            text-align: center;
+            background: #050505; color: #fff; font-family: 'Segoe UI', sans-serif; 
+            overflow: hidden; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center;
         }
         
-        /* Contenedor principal estilo X-Force */
+        /* Fondo con movimiento suave (Parallax simple) */
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+
         .card-container {
-            width: 90%;
-            max-width: 380px;
-            background: radial-gradient(circle at top, #1a202c, #000);
-            border: 1px solid #333;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-            position: relative;
+            width: 90%; max-width: 360px; background: rgba(15, 20, 30, 0.95);
+            border: 1px solid #333; border-radius: 15px; padding: 25px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center;
+            backdrop-filter: blur(10px);
         }
 
-        /* Título de la tarjeta */
-        .brand-title {
-            color: #ccc;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        .bank-info {
-            font-size: 0.8em;
-            color: #888;
-            margin-bottom: 20px;
-        }
-
-        /* Caja del número (La importante) */
         .number-box {
-            background: #fffdf2;
-            color: #000;
-            font-family: monospace;
-            font-size: 1.1em;
-            font-weight: bold;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px solid #f3ba2f;
-            word-break: break-all;
+            background: #fffdf2; color: #000; font-family: monospace;
+            font-size: 1.15em; font-weight: bold; padding: 15px;
+            border-radius: 10px; margin: 20px 0; border: 2px solid #f3ba2f;
         }
 
-        /* Botón dorado */
         .btn-copy {
-            background: #f3ba2f;
-            color: #000;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 0.9em;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(243, 186, 47, 0.3);
-            margin-bottom: 20px;
-            width: 80%;
+            background: #f3ba2f; color: #000; border: none; padding: 12px;
+            border-radius: 25px; font-weight: bold; width: 100%; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(243, 186, 47, 0.3); margin-bottom: 15px;
         }
 
-        /* Sección "Dropped By" */
-        .footer-info {
-            margin-top: 15px;
-            font-size: 0.85em;
-            color: #aaa;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
-        
-        .sender-tag {
-            color: #f3ba2f; /* Dorado */
-            font-weight: bold;
+        .btn-close {
+            background: #ff3b30; color: #fff; border: none; padding: 10px;
+            border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;
         }
 
-        /* Animación de fondo (estrellas/partículas simples) */
-        .bg-particles {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background-image: radial-gradient(#fff 1px, transparent 1px);
-            background-size: 20px 20px;
-            opacity: 0.1;
-        }
+        .footer { margin-top: 15px; font-size: 0.85em; color: #aaa; border-top: 1px solid #222; padding-top: 10px; }
+        .gold { color: #f3ba2f; font-weight: bold; }
     </style>
 </head>
 <body>
-    
-    <div class="bg-particles"></div>
+    <canvas id="bg-canvas"></canvas>
 
     <div class="card-container">
-        <div id="brandDisplay" class="brand-title">UNKNOWN CARD</div>
-        <div id="flagDisplay" class="bank-info">INTERNATIONAL BANK</div>
+        <div id="brand" style="font-size: 0.9em; letter-spacing: 2px; color: #888;">CARD PREMIER</div>
+        <div id="flag" style="font-size: 1.5em; margin: 10px 0;">🌐</div>
+        
+        <div class="number-box" id="display">Cargando...</div>
 
-        <div id="cardDisplay" class="number-box">Cargando datos...</div>
+        <button class="btn-copy" onclick="copyNum()">Copy Card Number</button>
+        <button class="btn-close" onclick="window.Telegram.WebApp.close()">CLOSE</button>
 
-        <button class="btn-copy" onclick="copyData()">Copy Card Number</button>
-
-        <div class="footer-info">
-            👨‍💻 Dropped by <span id="senderDisplay" class="sender-tag">...</span>
-            <br>
-            <span style="font-size: 0.8em; opacity: 0.6;">👁️ Secure View Active</span>
+        <div class="footer">
+            👨‍💻 Dropped by <span id="sender" class="gold">@User</span>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        tg.expand();
 
-        // Función para leer URL o Telegram Data
-        function getData() {
-            const fromTg = tg.initDataUnsafe.start_param;
-            if (fromTg) return fromTg;
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('start_param');
+        // Fondo animado de estrellas
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        function init() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            for(let i=0; i<100; i++) stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.5, d: Math.random()*1});
+        }
+        function draw() {
+            ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "white";
+            stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill(); s.y += s.d; if(s.y > canvas.height) s.y = 0; });
+            requestAnimationFrame(draw);
+        }
+        init(); draw();
+
+        // Carga de datos
+        const raw = tg.initDataUnsafe.start_param || new URLSearchParams(window.location.search).get('start_param');
+        if(raw) {
+            const parts = decodeURIComponent(raw).split('|');
+            document.getElementById('display').innerText = `${parts[0]}|${parts[1]}|${parts[2]}`;
+            document.getElementById('sender').innerText = parts[3];
+            document.getElementById('brand').innerText = parts[4] + " PREMIER";
+            document.getElementById('flag').innerText = parts[5]; // La banderita del país
         }
 
-        const rawData = getData();
-
-        if (rawData) {
-            try {
-                // Formato esperado: CARD|SENDER|BRAND|FLAG
-                const decoded = decodeURIComponent(rawData);
-                const parts = decoded.split('|');
-
-                // 1. La Tarjeta (Partes 0, 1, 2) -> "Num|MM/YY|CVV"
-                // Como la tarjeta ya venía con barras en el codigo Python, hay que tener cuidado al dividir.
-                // El Python envía: "1234|01/26|000 | @User | VISA | US"
-                // Pero como usamos split('|'), se separará todo.
-                
-                // Reconstruimos la tarjeta (los primeros 3 elementos)
-                const cardFull = `${parts[0]}|${parts[1]}|${parts[2]}`;
-                document.getElementById('cardDisplay').innerText = cardFull;
-
-                // 2. El Sender (Parte 3)
-                const sender = parts[3] || "Anónimo";
-                document.getElementById('senderDisplay').innerText = "@" + sender;
-
-                // 3. La Marca (Parte 4)
-                const brand = parts[4] || "CARD";
-                document.getElementById('brandDisplay').innerText = brand + " PREMIER";
-
-                // 4. Bandera (Parte 5)
-                const flag = parts[5] || "🏳️";
-                document.getElementById('flagDisplay').innerText = `${flag} INTERNATIONAL BANK`;
-
-            } catch (e) {
-                document.getElementById('cardDisplay').innerText = "Error de formato";
-            }
-        }
-
-        function copyData() {
-            const text = document.getElementById('cardDisplay').innerText;
-            const number = text.split('|')[0];
-            navigator.clipboard.writeText(number);
-            tg.showAlert("Copiado: " + number);
+        function copyNum() {
+            const n = document.getElementById('display').innerText.split('|')[0];
+            navigator.clipboard.writeText(n);
+            tg.showScanQrPopup({text: "Copiado!"}); // Efecto visual
+            setTimeout(() => tg.closeScanQrPopup(), 1000);
         }
     </script>
 </body>
