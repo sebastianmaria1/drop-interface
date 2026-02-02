@@ -3,72 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faddy Core</title>
+    <title>Secure View</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #000; color: #f3ba2f; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
-        .box { border: 2px solid #f3ba2f; padding: 20px; border-radius: 10px; width: 100%; max-width: 400px; background: #111; text-align: center; }
-        h1 { margin: 0 0 15px; color: white; font-size: 1.5em; }
-        .data-display { background: #222; padding: 15px; border-radius: 5px; margin: 20px 0; font-size: 1.1em; word-break: break-all; border: 1px dashed #444; color: #fff; }
-        .btn { padding: 15px; background: #f3ba2f; color: black; border: none; font-weight: bold; width: 100%; cursor: pointer; border-radius: 5px; font-size: 1.1em; margin-top: 10px; }
-        .btn:active { opacity: 0.8; }
+        body { 
+            background: #050505; /* Fondo muy oscuro */
+            color: #fff; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            text-align: center;
+        }
+        
+        /* Contenedor principal estilo X-Force */
+        .card-container {
+            width: 90%;
+            max-width: 380px;
+            background: radial-gradient(circle at top, #1a202c, #000);
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        /* Título de la tarjeta */
+        .brand-title {
+            color: #ccc;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .bank-info {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        /* Caja del número (La importante) */
+        .number-box {
+            background: #fffdf2;
+            color: #000;
+            font-family: monospace;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #f3ba2f;
+            word-break: break-all;
+        }
+
+        /* Botón dorado */
+        .btn-copy {
+            background: #f3ba2f;
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.9em;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(243, 186, 47, 0.3);
+            margin-bottom: 20px;
+            width: 80%;
+        }
+
+        /* Sección "Dropped By" */
+        .footer-info {
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #aaa;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+        
+        .sender-tag {
+            color: #f3ba2f; /* Dorado */
+            font-weight: bold;
+        }
+
+        /* Animación de fondo (estrellas/partículas simples) */
+        .bg-particles {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background-image: radial-gradient(#fff 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+        }
     </style>
 </head>
 <body>
+    
+    <div class="bg-particles"></div>
 
-    <div class="box">
-        <h1>🔐 SECURE DROP</h1>
-        <div id="status">Esperando datos...</div>
-        
-        <div id="cardData" class="data-display">---</div>
-        
-        <button class="btn" onclick="copiar()">COPIAR NUMERO</button>
+    <div class="card-container">
+        <div id="brandDisplay" class="brand-title">UNKNOWN CARD</div>
+        <div id="flagDisplay" class="bank-info">INTERNATIONAL BANK</div>
+
+        <div id="cardDisplay" class="number-box">Cargando datos...</div>
+
+        <button class="btn-copy" onclick="copyData()">Copy Card Number</button>
+
+        <div class="footer-info">
+            👨‍💻 Dropped by <span id="senderDisplay" class="sender-tag">...</span>
+            <br>
+            <span style="font-size: 0.8em; opacity: 0.6;">👁️ Secure View Active</span>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
-        // --- LÓGICA TODOTERRENO ---
-        function obtenerDatos() {
-            // 1. Intentar leer desde Telegram (Mini App)
-            const paramTg = tg.initDataUnsafe.start_param;
-            if (paramTg) return paramTg;
-
-            // 2. Intentar leer desde Navegador (Emergency Link)
+        // Función para leer URL o Telegram Data
+        function getData() {
+            const fromTg = tg.initDataUnsafe.start_param;
+            if (fromTg) return fromTg;
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('start_param');
         }
 
-        // Ejecutar lectura
-        const rawData = obtenerDatos();
+        const rawData = getData();
 
         if (rawData) {
             try {
+                // Formato esperado: CARD|SENDER|BRAND|FLAG
                 const decoded = decodeURIComponent(rawData);
-                document.getElementById('status').innerText = "✅ DATOS RECIBIDOS";
-                document.getElementById('status').style.color = "#0f0";
-                document.getElementById('cardData').innerText = decoded;
+                const parts = decoded.split('|');
+
+                // 1. La Tarjeta (Partes 0, 1, 2) -> "Num|MM/YY|CVV"
+                // Como la tarjeta ya venía con barras en el codigo Python, hay que tener cuidado al dividir.
+                // El Python envía: "1234|01/26|000 | @User | VISA | US"
+                // Pero como usamos split('|'), se separará todo.
+                
+                // Reconstruimos la tarjeta (los primeros 3 elementos)
+                const cardFull = `${parts[0]}|${parts[1]}|${parts[2]}`;
+                document.getElementById('cardDisplay').innerText = cardFull;
+
+                // 2. El Sender (Parte 3)
+                const sender = parts[3] || "Anónimo";
+                document.getElementById('senderDisplay').innerText = "@" + sender;
+
+                // 3. La Marca (Parte 4)
+                const brand = parts[4] || "CARD";
+                document.getElementById('brandDisplay').innerText = brand + " PREMIER";
+
+                // 4. Bandera (Parte 5)
+                const flag = parts[5] || "🏳️";
+                document.getElementById('flagDisplay').innerText = `${flag} INTERNATIONAL BANK`;
+
             } catch (e) {
-                document.getElementById('cardData').innerText = "Error decodificando";
+                document.getElementById('cardDisplay').innerText = "Error de formato";
             }
-        } else {
-            document.getElementById('status').innerText = "⚠️ Link vacío o expirado";
         }
 
-        function copiar() {
-            const texto = document.getElementById('cardData').innerText;
-            const numero = texto.split('|')[0]; // Toma solo lo que está antes de la barra
-            
-            navigator.clipboard.writeText(numero).then(() => {
-                // Intento de alerta visual
-                const btn = document.querySelector('.btn');
-                btn.innerText = "¡COPIADO!";
-                setTimeout(() => btn.innerText = "COPIAR NUMERO", 2000);
-            }).catch(err => {
-                alert("Copia manual: " + numero);
-            });
+        function copyData() {
+            const text = document.getElementById('cardDisplay').innerText;
+            const number = text.split('|')[0];
+            navigator.clipboard.writeText(number);
+            tg.showAlert("Copiado: " + number);
         }
     </script>
 </body>
