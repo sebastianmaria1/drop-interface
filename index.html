@@ -1,37 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faddy Core Drops</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #0a0e14; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .container { border: 1px solid #f3ba2f; border-radius: 20px; padding: 25px; background: #111; margin-top: 50px; }
-        h1 { font-size: 26px; color: #f3ba2f; margin: 0; }
-        .card-box { background: white; color: black; padding: 20px; border-radius: 15px; font-size: 1.2em; font-family: monospace; font-weight: bold; margin: 20px 0; }
-        .btn { background: #f3ba2f; color: black; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
+        body { 
+            background-color: #000; 
+            color: #f3ba2f; 
+            font-family: monospace; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            text-align: center;
+        }
+        .box { 
+            border: 2px solid #f3ba2f; 
+            padding: 20px; 
+            border-radius: 10px; 
+            width: 80%; 
+            background: #111;
+        }
+        h1 { margin: 0 0 15px; color: white; font-size: 1.5rem; }
+        #data { font-size: 1.1rem; word-break: break-all; margin: 20px 0; }
+        .btn { 
+            padding: 12px 24px; 
+            background: #f3ba2f; 
+            color: black; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 5px;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>FADDY <span style="color:white">CORE</span></h1>
-        <div class="card-box" id="cardDisplay">ESPERANDO DATOS...</div>
-        <button class="btn" onclick="copyCard()">COPIAR TARJETA</button>
+    <div class="box">
+        <h1>🔐 SECURE DROP</h1>
+        <div id="data">Esperando datos...</div>
+        
+        <button class="btn" onclick="copiar()">COPIAR DATOS</button>
     </div>
+
     <script>
+        // 1. INICIAR TELEGRAM
         const tg = window.Telegram.WebApp;
+        tg.ready();
         tg.expand();
 
-        // ⚠️ LEER LA DATA DEL BOT ⚠️
-        const rawParam = tg.initDataUnsafe.start_param || "";
-        const cardData = decodeURIComponent(rawParam) || "ERROR: NO DATA";
-        
-        document.getElementById('cardDisplay').innerText = cardData;
+        // 2. LEER DATOS DEL BOT
+        const rawData = tg.initDataUnsafe.start_param;
 
-        function copyCard() {
-            const num = cardData.split('|')[0];
-            navigator.clipboard.writeText(num);
-            tg.showAlert("✅ Tarjeta copiada!");
+        // 3. MOSTRAR EN PANTALLA
+        if (rawData) {
+            // Decodificar caracteres especiales
+            const decoded = decodeURIComponent(rawData);
+            document.getElementById('data').innerText = decoded;
+        } else {
+            // Mensaje si abres el link sin datos
+            document.getElementById('data').innerText = "⚠️ No hay tarjeta seleccionada";
+        }
+
+        function copiar() {
+            const texto = document.getElementById('data').innerText;
+            // Copiar solo el numero (antes de la primera barra |)
+            const tarjeta = texto.split('|')[0];
+            navigator.clipboard.writeText(tarjeta);
+            tg.showAlert("✅ Copiado: " + tarjeta);
         }
     </script>
 </body>
