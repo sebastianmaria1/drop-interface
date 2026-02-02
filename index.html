@@ -6,45 +6,33 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { background: #0a0e14; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .container { border: 1px solid #1a222c; border-radius: 20px; padding: 25px; background: radial-gradient(circle at top, #161d26 0%, #0a0e14 100%); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .container { border: 1px solid #1a222c; border-radius: 20px; padding: 25px; background: radial-gradient(circle at top, #161d26 0%, #0a0e14 100%); }
         h1 { font-size: 26px; font-weight: 800; margin: 0; text-transform: uppercase; }
         .gold { color: #f3ba2f; }
-        .btn-copy { background: #f3ba2f; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; margin: 20px 0; font-size: 16px; cursor: pointer; }
-        .card-box { background: #fffbe6; color: #111; padding: 20px; border-radius: 15px; font-size: 1.3em; font-family: monospace; font-weight: bold; border: 2px solid #f3ba2f; }
-        .details-title { border-bottom: 1px solid #333; display: inline-block; padding: 0 20px 5px; margin-top: 20px; letter-spacing: 2px; }
-        .info-grid { margin-top: 20px; color: #aaa; font-size: 14px; text-align: left; }
-        .info-item { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #222; padding-bottom: 5px; }
-        .val { color: white; font-weight: 600; }
+        .card-box { background: #fffbe6; color: #111; padding: 20px; border-radius: 15px; font-size: 1.3em; font-family: monospace; font-weight: bold; border: 2px solid #f3ba2f; margin: 20px 0; }
+        .btn-copy { background: #f3ba2f; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>FADDY <span class="gold">CORE</span></h1>
-        <button class="btn-copy" onclick="copyCard()">COPIAR NÚMERO</button>
-        <div class="gold details-title">DETALLES</div>
-        <div class="card-box" id="cardDisplay">Cargando...</div>
-        <div class="info-grid">
-            <div class="info-item"><span>BIN:</span> <span class="val gold" id="binVal">------</span></div>
-            <div class="info-item"><span>Banco:</span> <span class="val">FADDY PREMIUM BANK</span></div>
-            <div class="info-item"><span>Status:</span> <span class="val" style="color:#00ff00;">LIVE ✅</span></div>
-        </div>
+        <div class="card-box" id="cardDisplay">ESPERANDO DATA...</div>
+        <button class="btn-copy" onclick="copyCard()">COPIAR TARJETA</button>
     </div>
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️ ESTA ES LA PARTE QUE ENLAZA LOS DATOS ⚠️
-        // Telegram manda la tarjeta aquí cuando usas el link t.me
+        // ⚠️ ESTA LÍNEA ES EL PUENTE REAL ⚠️
+        // Lee la tarjeta que el bot envió en el link t.me
         const rawParam = tg.initDataUnsafe.start_param || "";
         const cardData = decodeURIComponent(rawParam) || "NO DATA RECEIVED";
         
         document.getElementById('cardDisplay').innerText = cardData;
-        document.getElementById('binVal').innerText = cardData.substring(0, 6);
 
         function copyCard() {
             const num = cardData.split('|')[0];
             navigator.clipboard.writeText(num);
-            tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert("✅ Tarjeta copiada!");
         }
     </script>
